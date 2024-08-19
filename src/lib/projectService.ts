@@ -1,13 +1,23 @@
-export class  ProjectService {
+import { Project } from "./project";
+
+export class ProjectService {
   projects: Project[];
   projectsIdIndex: number = 0;
 
   constructor() {
     this.projects = [];
     const FromLocal = localStorage.getItem("projects");
+    const IndexFromLocal = localStorage.getItem("projectsIdIndex");
 
     if (FromLocal != null) {
-      this.projects = JSON.parse(FromLocal);
+      //this.projects = JSON.parse(FromLocal);
+
+      const plainProjects = JSON.parse(FromLocal);
+      this.projects = plainProjects.map(
+        (plainProject: any) =>
+          new Project(plainProject.id, plainProject.nazwa, plainProject.opis)
+      );
+      this.projectsIdIndex = Number(IndexFromLocal);
     }
   }
 
@@ -19,7 +29,6 @@ export class  ProjectService {
     this.saveIndexToLocalStorage();
   }
 
-  
   getProject(id?: number): Project[] | Project | undefined {
     if (id == null || id == undefined) {
       return this.projects;
@@ -29,62 +38,69 @@ export class  ProjectService {
     return project;
   }
 
+  resetProjects() {
+    this.projects = [];
+    this.saveProjectsToLocalStorage();
+    this.projectsIdIndex = 0;
+    this.saveProjectsToLocalStorage();
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-
-
-
-
-
-  updateProject(
-    id: number,
-    nazwa?: string,
-    opis?: string
-  ): Project | undefined {
-    const project = this.projects.find((project) => project.id === id);
-    if (project != undefined) {
-      if (nazwa != null || nazwa != undefined) {
-        project.nazwa = nazwa;
-      }
-
-      if (opis != null || opis != undefined) {
-        project.nazwa = opis;
-      }
-
-      this.projects[project.id - 1] = project;
+  // wszystkie powinny zwracac boolean żeby wiadomo było, czy funkcja dziala, czy nie ale nie chce mi sie
+  deleteProject(id: number): boolean {
+    const index = this.projects.findIndex((project) => project.id === id);
+    if (index === -1) {
+      // If the index is -1, no object was found with the given id
+      console.log(`Project with id ${id} not found.`);
+      return false;
     }
 
-    this.saveToLocalStorage();
-    return project;
+    this.projects.splice(index, 1);
+    this.saveProjectsToLocalStorage();
+
+    return true;
   }
 
-  deleteProject(id: number) {
-    delete this.projects[id - 1];
-    this.saveToLocalStorage();
+  updateProject(id: number, name?: string, desc?: string): boolean {
+    const index = this.projects.findIndex((project) => project.id === id);
+    if (index === -1) {
+      // If the index is -1, no object was found with the given id
+      console.log(`Project with id ${id} not found.`);
+      return false;
+    }
+    if (name) {
+      this.projects[index].nazwa = name;
+    }
+    if(desc)
+    {
+      this.projects[index].opis = desc;
+
+    }
+
+    this.saveProjectsToLocalStorage();
+    return true;
   }
+
+  /*
+
+
+
+
+
+
+
+
+
+
+
 */
   saveProjectsToLocalStorage() {
     localStorage.setItem("projects", JSON.stringify(this.projects));
   }
 
   saveIndexToLocalStorage() {
-    localStorage.setItem("projectsIdIndex", JSON.stringify(this.projectsIdIndex));
+    localStorage.setItem(
+      "projectsIdIndex",
+      JSON.stringify(this.projectsIdIndex)
+    );
   }
 }

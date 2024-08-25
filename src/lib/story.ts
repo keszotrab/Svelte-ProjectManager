@@ -4,7 +4,6 @@ import { Project } from "./project";
 //To coś jak tablica z dwoma kluczami obcymi z tabeli projects i users. 
 //Tylko, dziwne, że Projekty nie mają "ownera" *shrug emoji*
 
-
 export class Story {
     id: number;
     name: string;
@@ -39,14 +38,14 @@ export class Story {
 
 }
 
-enum Priority{
-    low = "low",
-    medium = "medium",
-    high = "high"
+export enum Priority{
+    Low = "low",
+    Medium = "medium",
+    High = "high"
 }
 
-enum State {
-    todo = "done",
-    doing = "doing",
-    done = "done"
+export enum State {
+    Todo = "todo",
+    Doing = "doing",
+    Done = "done"
 }

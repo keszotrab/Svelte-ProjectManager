@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "imie": "Adam",
+        "nazwisko": "Adamski",
+        "role": "admin"
+    },
+    {
+        "id": 2,
+        "imie": "Damian",
+        "nazwisko": "Drezyna",
+        "role": "developer"
+    },
+    {
+        "id": 3,
+        "imie": "Olaf",
+        "nazwisko": "Orkeusz",
+        "role": "devops"
+    }
+]

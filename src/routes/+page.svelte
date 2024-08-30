@@ -1,7 +1,9 @@
 <script lang="ts">
   import { Priority, State } from "$lib/story";
-  import { ProjectService } from "../lib/projectService";
+  import { ProjectService } from "../lib/server/projectServiceOld";
   import { onMount } from "svelte";
+  //import { db } from "$lib/firebase";
+  import { collection, getDocs } from "firebase/firestore";
 
   let projectService: ProjectService;
   let projectId: number;
@@ -11,21 +13,32 @@
   let projectDescToUpdate: string;
   let projectIdToUpdate: number;
   let loggedUser: string = " tutaj nazwa użyt";
+  let taskIdToRoute: number;
 
   let currentState: State;
+//firebase try
+let items: Array<any> = [];
 
-  //let selectedState: State;
-  //let onChange: (state: State) => void;
 
-  //let userService = new UserService();
-
-  //let currentProject = localStorage.getItem("currentProject");
-
-  //if (currentProject == null || undefined) {
-  //}
-
-  onMount(() => {
+  onMount(async () => {
     projectService = new ProjectService();
+    
+    /*
+    try {
+      // Pobranie danych z kolekcji 'users'
+      const querySnapshot = await getDocs(collection(db, "users"));
+
+      // Mapowanie dokumentów na dane
+      items = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        console.log("User:", data); // Logowanie każdego użytkownika do konsoli
+        return data;
+      });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+      */
+
   });
 
   function showProject() {
@@ -98,13 +111,33 @@
     projectService.updateStory(1, "UpdateStoryName");
   }
 
-
-  function showChosenState()
-  {
-    console.log('====================================');
+  function showChosenState() {
+    console.log("====================================");
     console.log(currentState);
-    console.log('====================================');
+    console.log("====================================");
   }
+
+  function addExampleTasksHandler() {
+    projectService.addExampleTasks();
+  }
+
+  function showTasksHandler() {
+    projectService.getTask();
+  }
+
+  function addTaskHandler() {
+    projectService.addTask(
+      "cool task",
+      "this task is very cool",
+      Priority.Medium,
+      1,
+      State.Done,
+      1,
+      new Date("2024-08-25")
+    );
+  }
+
+  function routeToTask() {}
 </script>
 
 <h1>Projects Controlle Panelle pizza parmeziana</h1>
@@ -146,7 +179,7 @@
 
 <p>Currently Logged User: {loggedUser}</p>
 
-<p>Add a story</p>
+<p>----------------Story-----------------</p>
 
 <p>
   <button on:click={showStoriesHandler}> Show a Story </button>
@@ -194,8 +227,26 @@
   <button on:click={showChosenState}> Show chosen state</button>
 </p>
 
+<p>----------------Task-----------------</p>
+
+<button on:click={showTasksHandler}> Show a Task </button>
+
+<button on:click={addExampleTasksHandler}> Set Example Tasks </button>
+
+<button on:click={addTaskHandler}> Add a example TASK aka CRUD thingy </button>
+
+<p>-------------Hard Resets-------------</p>
+
 <p>
   <button on:click={resetStoriesHandler}> RESET STORIES </button>
 </p>
 
 <button on:click={resetProjects}> Reset Projects </button>
+
+<p>----------Routing test-----------</p>
+
+<p>
+  <button on:click={routeToTask}> RouteToTask </button>
+  <a href="/task/{taskIdToRoute}">Reactive link</a>
+  <input type="text" bind:value={taskIdToRoute} placeholder="id of task here" />
+</p>

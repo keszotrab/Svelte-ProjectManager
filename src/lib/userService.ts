@@ -20,6 +20,9 @@ export class UserService {
     this.users.push(new User(2, "Damian", "Drezyna", Role.Developer)),
     this.users.push(new User(3, "Olaf", "Orkeusz", Role.Devops))
 
+
+
+    
   }
   //????? Tam potem jest implementacja konta google to pewnie nie potrzebne
   // ale sie zobaczy

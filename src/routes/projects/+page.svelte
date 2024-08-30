@@ -3,7 +3,7 @@
   import { Priority, State, Story } from "$lib/story";
   import { User, Role } from "$lib/user";
   import { UserService } from "$lib/userService";
-  import { ProjectService } from "../../lib/projectService";
+  import { ProjectService } from "../../lib/server/projectServiceOld";
   import { onMount } from "svelte";
 
   //services

@@ -1,0 +1,29 @@
+:root {
+    --background-color: white;
+    --text-color: black;
+}
+
+[data-theme="dark"] {
+    --background-color: black;
+    --text-color: white;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #343a40 !important; 
+}
+
+[data-theme="dark"] .text-light {
+    color: #adb5bd !important; 
+}
+
+/* Other Bootstrap overrides */
+[data-theme="dark"] .navbar-light {
+    background-color: #333 !important; 
+}
+
+[data-theme="dark"] .btn-light {
+    background-color: #6c757d !important; 
+    color: #fff !important; 
+}
+
+

@@ -6,7 +6,7 @@ const projectService = new ProjectService();
 
 export const GET: RequestHandler = async ({ params }) => {
   try {
-    const story = await projectService.getStory(params.post_id as string, params.storyId as string);
+    const story = await projectService.getStory(params.post_id as string, params.story_id as string);
     return new Response(JSON.stringify(story), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     const err = error as Error;

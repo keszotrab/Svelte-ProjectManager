@@ -6,6 +6,7 @@ import {
   Firestore,
   getDoc,
   getDocs,
+  Timestamp,
   updateDoc,
   type DocumentData,
 } from "firebase/firestore";
@@ -13,17 +14,10 @@ import { Project } from "../project";
 import { Story, Priority, State } from "../story";
 import { Task } from "../tasks";
 import { User, Role } from "../user";
-import { UserService } from "../userService";
-import { db } from "./firebase";
+import { db } from "../firebase";
 
 export class ProjectService {
-  //userService: UserService; //Serwis w przyszłości do kosza
-
   private projectsRef = collection(db, "projects");
-
-  //projects?: Project[];
-  //stories?: Story[];
-  //tasks?: Task[];
 
   currentProject?: Project | undefined | null;
 
@@ -117,6 +111,7 @@ export class ProjectService {
   async getStory(projectId: string, storyId: string): Promise<Story> {
     const storyDoc = doc(db, `projects/${projectId}/stories`, storyId);
     const storySnapshot = await getDoc(storyDoc);
+
     if (storySnapshot.exists()) {
       const data = storySnapshot.data();
       return new Story(
@@ -236,7 +231,10 @@ export class ProjectService {
   */
 
   async getTasks(projectId: string, storyId: string): Promise<Task[]> {
-    const tasksCollection = collection(db, `projects/${projectId}/stories/${storyId}/tasks`);
+    const tasksCollection = collection(
+      db,
+      `projects/${projectId}/stories/${storyId}/tasks`
+    );
     const tasksSnapshot = await getDocs(tasksCollection);
 
     return tasksSnapshot.docs.map((doc) => {
@@ -251,18 +249,220 @@ export class ProjectService {
         data.aproxTime.toDate(),
         data.state as State,
         data.createDate.toDate(),
-        data.startDate.toDate(),
-        data.completeDate.toDate(),
-        {
-          id: data.owner.id,
-          name: data.owner.name,
-          surname: data.owner.surname,
-          role: data.owner.role,
-        } as User
+        data.startDate?.toDate() ? data.startDate?.toDate() : undefined,
+        data.completeDate?.toDate() ? data.completeDate?.toDate() : undefined,
+        data.owner
+          ? {
+              id: data.owner.id,
+              name: data.owner.name,
+              surname: data.owner.surname,
+              role: data.owner.role,
+            }
+          : undefined
       );
     });
   }
 
+  async getTask(
+    projectId: string,
+    storyId: string,
+    taskId: string
+  ): Promise<Task> {
+    const taskDoc = doc(
+      db,
+      `projects/${projectId}/stories/${storyId}/tasks`,
+      taskId
+    );
+    const taskSnapshot = await getDoc(taskDoc);
+    let a = new Date();
+    const data2 = taskSnapshot.data();
 
+    if (taskSnapshot.exists()) {
+      const data = taskSnapshot.data();
+      return new Task(
+        taskSnapshot.id,
+        data.name,
+        data.desc,
+        data.priority as Priority,
+        storyId,
+        data.aproxTime.toDate(),
+        data.state as State,
+        data.createDate.toDate(),
+        data.startDate?.toDate() ? data.startDate?.toDate() : undefined,
+        data.completeDate?.toDate() ? data.completeDate?.toDate() : undefined,
+        data.owner
+          ? {
+              id: data.owner.id,
+              name: data.owner.name,
+              surname: data.owner.surname,
+              role: data.owner.role,
+            }
+          : undefined
+      );
+    } else {
+      throw new Error("Task not found");
+    }
+  }
 
+  async createTask(
+    projectId: string,
+    storyId: string,
+    name: string,
+    desc: string,
+    priority: Priority,
+    aproxTime: string
+  ): Promise<Task> {
+    const TasksCollection = collection(
+      db,
+      `projects/${projectId}/stories/${storyId}/tasks`
+    );
+    const newTaskRef = await addDoc(TasksCollection, {
+      name,
+      desc,
+      priority,
+      state: State.Todo,
+      createDate: Timestamp.fromDate(new Date()),
+      aproxTime: Timestamp.fromDate(new Date (aproxTime)),
+    });
+    const newTaskSnapshot = await getDoc(newTaskRef);
+    return new Task(
+      newTaskRef.id,
+      name,
+      desc,
+      priority,
+      storyId, // Bezpośrednie przypisanie projectId zamiast obiektu Project
+      new Date (aproxTime),
+      State.Todo,
+      new Date()
+    );
+  }
+
+  async updateTask(
+    projectId: string,
+    storyId: string,
+    taskId: string,
+    updates: Partial<{
+      name: string;
+      desc: string;
+      priority: Priority;
+      state: State;
+      aproxTime: string;
+      startDate?: string;
+      completeDate?: string;
+      owner?: User;
+    }>
+  ): Promise<Task> {
+    const taskDoc = doc(
+      db,
+      `projects/${projectId}/stories/${storyId}/tasks`,
+      taskId
+    );
+
+    console.log("===== UPDATE DATA==========");
+    console.log(updates);
+    console.log("====================================");
+
+    const taskSnapshot = await getDoc(taskDoc);
+    if (!taskSnapshot.exists()) {
+      throw new Error("Task not found");
+    }
+
+    const currentData = taskSnapshot.data();
+
+    let newData;
+
+    if (updates.completeDate) {
+      const newData2: any = {
+        ...currentData,
+        ...updates,
+        startDate: updates.startDate
+          ? Timestamp.fromDate(new Date(updates.startDate))
+          : currentData.startDate,
+        aproxTime: updates.aproxTime
+          ? Timestamp.fromDate(new Date(updates.aproxTime))
+          : currentData.aproxTime,
+        completeDate: updates.completeDate
+          ? Timestamp.fromDate(new Date(updates.completeDate))
+          : currentData.completeDate,
+      };
+      newData = newData2;
+    } else {
+      const newData2: any = {
+        ...currentData,
+        ...updates,
+        startDate: updates.startDate
+          ? Timestamp.fromDate(new Date(updates.startDate))
+          : currentData.startDate,
+        aproxTime: updates.aproxTime
+          ? Timestamp.fromDate(new Date(updates.aproxTime))
+          : currentData.aproxTime,
+        completeDate: updates.completeDate
+          ? Timestamp.fromDate(new Date(updates.completeDate))
+          : currentData.completeDate,
+      };
+      newData = newData2;
+    }
+
+    // Sprawdzenie zależności między stanami a datami/właścicielem
+    if (updates.state === State.Doing) {
+      if (!updates.startDate || !updates.owner) {
+        throw new Error('State "Doing" requires "startDate" and "owner"');
+      }
+      newData.startDate = Timestamp.fromDate(new Date(updates.startDate));
+      newData.owner = updates.owner;
+    } else if (updates.state === State.Done) {
+      if (!updates.completeDate || !updates.owner) {
+        throw new Error('State "Done" requires "completeDate" and "owner"');
+      }
+      newData.completeDate = Timestamp.fromDate(new Date(updates.completeDate));
+      newData.owner = updates.owner;
+    }
+
+    Object.keys(newData).forEach(key => {
+      if (newData[key] === undefined) {
+        delete newData[key];
+      }
+    });
+
+    
+    await updateDoc(taskDoc, newData);
+
+    const updatedTaskSnapshot = await getDoc(taskDoc);
+
+    const data = updatedTaskSnapshot.data() as DocumentData;
+
+    return new Task(
+      taskId,
+      data.name,
+      data.desc,
+      data.priority as Priority,
+      storyId,
+      data.aproxTime.toDate(),
+      data.state as State,
+      data.createDate.toDate(),
+      data.startDate?.toDate(),
+      data.completeDate?.toDate(),
+      data.owner
+        ? {
+            id: data.owner.id,
+            name: data.owner.name,
+            surname: data.owner.surname,
+            role: data.owner.role,
+          }
+        : undefined
+    );
+  }
+
+  async deleteTask(
+    projectId: string,
+    storyId: string,
+    taskId: string
+  ): Promise<void> {
+    const taskDoc = doc(
+      db,
+      `projects/${projectId}/stories/${storyId}/tasks`,
+      taskId
+    );
+    await deleteDoc(taskDoc);
+  }
 }

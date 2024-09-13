@@ -1,0 +1,14 @@
+Problemixy:
+1. JEDNAK NIE PROBLEM, JEST OK  //Data w firebase.ts powinna być w .env dla bezpieczentwa itd.
+2. Ciasteczka security na false w login, auth itd. 
+3. Security w firebase nie istnieje. 
+4. API nie wymaga tokenu użytkownika, aka każdy może co chce tam babrać.
+5. Login i hasło to pic na wode fotomontarz, brakuje hashowania. 
+6. Logowanie przez Google, wydaje się tak bardzo wygodne i bezpieczne, że 
+implementowanie własnego systemu logowania wydaje się redundant.
+7.
+8.  Do notification w czasie rzeczywistym możnaby podpinać 
+Httpevent(czy jak tam zwał), ale nie wiem czy to potrzebne
+9.  Notification jest updateowane kiedy ktoś wrzuca, nowe info i zapisuje lokalnie, 
+żeby nie było problemów z ilościa zapisów i odczytow w bazie nie potrzebnie
+10. Jak więcej mi się przypomni to wpisze. 

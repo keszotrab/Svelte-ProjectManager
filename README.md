@@ -1,4 +1,4 @@
-#TODO 
+# TODO : 
 ## - Polish the app
 ## - Write proper readme
 

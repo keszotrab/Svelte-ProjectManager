@@ -10,6 +10,7 @@ import {
   updateDoc,
   type DocumentData,
 } from "firebase/firestore";
+
 import { Project } from "../project";
 import { Story, Priority, State } from "../story";
 import { Task } from "../tasks";

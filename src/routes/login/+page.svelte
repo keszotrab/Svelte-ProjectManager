@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { auth, googleProvider, signInWithPopup } from "$lib/firebase";
   import { logOut, monitorAuthState, signInWithGoogle } from "$lib/googleAuth";
   import { getFirestore, doc, setDoc } from "firebase/firestore";
+  import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
+  import { auth, googleProvider } from "$lib/firebase";
 
   let isUserLogged: boolean | undefined;
   let login = "";
@@ -9,23 +10,20 @@
   let user: any = null;
   let isUserValid: boolean;
 
+  /*
   monitorAuthState((currentUser: any) => {
     user = currentUser;
-    console.log("====================================");
     console.log(user);
-    //console.log("====================================");
   });
+*/
 
+  /*
   async function handleLogin(event: Event) {
     event.preventDefault();
 
     let surname = login;
     let name = password;
     let objectToStringify = JSON.stringify({ surname, name });
-
-    //console.log("============");
-    //console.log("1st object ");
-    //console.log(objectToStringify);
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -47,60 +45,75 @@
       alert("Login failed. Please check your credentials.");
     }
   }
+    */
+
+  onAuthStateChanged(auth, (currentUser) => {
+    user = currentUser;
+    console.log("Current user: ", user);
+  });
 
   async function signInWithGoogleHandler() {
-    isUserLogged = await signInWithGoogle();
-    if(isUserLogged){
+
+    googleProvider.setCustomParameters({
+      prompt: "select_account", 
+    });
+
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error("Login error", err);
+    }
+
+    //isUserLogged = await signInWithGoogle();
+    //if (isUserLogged) {
     //window.location.href = "/projects"
-  }
-
-
-
-
+    //}
   }
 
   async function handleLogout() {
-    await fetch('/api/delete-cookie', {
-      method: 'POST',
-    });
-    await logOut();
-    window.location.href = '/login';
+    await signOut(auth);
   }
-
-  
 </script>
+
 <div class="loginContainer">
+  {#if !user}
+    <form
+      on:submit={() => {
+        console.log("LOGIN ONLY BY GOOGLE TODO");
+      }}
+    >
+      <label for="login">Login:</label>
+      <input id="login" type="text" bind:value={login} required />
 
-{#if !user}
-  <form on:submit={handleLogin}>
-    <label for="login">Login:</label>
-    <input id="login" type="text" bind:value={login} required />
+      <label for="password">Password:</label>
+      <input id="password" type="password" bind:value={password} required />
 
-    <label for="password">Password:</label>
-    <input id="password" type="password" bind:value={password} required />
+      <button type="submit">Log In</button>
+    </form>
 
-    <button type="submit">Log In</button>
-  </form>
-  <button class="googleLoginBtn" on:click={signInWithGoogleHandler}>Sign in with Google</button>
+    <button class="googleLoginBtn" on:click={signInWithGoogleHandler}>
+      Sign in with Google
+    </button>
+  {:else}
+    <p>Hello {user.displayName}!</p>
+    <p>You are already Logged in!</p>
 
-{:else}
-  <p>Hello {user.displayName}!</p>
-  <p>You are already Logged in!</p>
-  
-  <button on:click={()=>{window.location.href = "/projects"}}>Go to projects</button>
-  <p> </p>
-  <button on:click={handleLogout}>Wyloguj się</button>
-{/if}
+    <button
+      on:click={() => {
+        window.location.href = "/projects";
+      }}>Go to projects</button
+    >
+    <p></p>
+    <button on:click={handleLogout}>Log Out</button>
+  {/if}
 </div>
 
-
 <style>
-
-  .googleLoginBtn{
+  .googleLoginBtn {
     margin-top: 10px;
   }
 
-  .loginContainer{
+  .loginContainer {
     display: flex;
     flex-direction: column;
     width: 300px;

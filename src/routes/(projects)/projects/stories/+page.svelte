@@ -99,8 +99,7 @@
   :root.dark div.mainDiv,
   :root.dark div,
   :root.dark table,
-  :root.dark tbody,
-  :root.dark div.mainButtonsDiv {
+  :root.dark tbody {
     background-color: #646464;
     color: #f4f4f4;
   }
@@ -112,7 +111,4 @@
     background-color: #646464;
   }
 
-  :root.dark div.currentProjectDiv {
-    border-color: yellow;
-  }
 </style>

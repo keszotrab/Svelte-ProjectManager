@@ -61,6 +61,7 @@
     });
   }
 
+    //// DO SPRAWDZENIA
   async function handleLogout() {
     await fetch("/api/delete-cookie", {
       method: "POST",
